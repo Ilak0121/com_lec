@@ -123,12 +123,10 @@ Exits if a read error occurs or if the DSP_FILE structure is invalid.
 Void read_record(FILE *fp , double *input , int length)
 ********************************************************************/
 
-void read_record(FILE *fp ,double * input , int length)
-{
+void read_record(FILE *fp ,double * input , int length){
     int status , i;
-	for(i=0 ; i < length ; i++)
-	{
-		status = fscanf(fp,"%lf\n", &input[length + i]);
+	for(i=0 ; i < length ; i++){
+		status = fscanf(fp,"%lf\n", &input[length + i]); //status ; read 'length' lf and write to [length~2length] in input array
     }
 }
 
