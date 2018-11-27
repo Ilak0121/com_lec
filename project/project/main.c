@@ -25,10 +25,12 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  images = (float *)malloc(sizeof(float)*IMG_COUNT*IMG_SIZE);
-  labels = (int *)malloc(sizeof(int)*IMG_COUNT);
-  labels_ans = (int *)malloc(sizeof(int)*IMG_COUNT);
-  confidences = (float *)malloc(sizeof(float)*IMG_COUNT);
+  int mul_same = IMG_COUNT << 2;                //중복 곱셈 제거.
+
+  images = (float *)malloc(IMG_SIZE * mul_same);//sizeof(float)*IMG_COUNT*IMG_SIZE);
+  labels = (int *)malloc(mul_same);             //sizeof(int)*IMG_COUNT);
+  labels_ans = (int *)malloc(mul_same);         //sizeof(int)*IMG_COUNT);
+  confidences = (float *)malloc(mul_same);      //sizeof(float)*IMG_COUNT);
 
   io_file = fopen(argv[1], "r");
   if(!io_file)
