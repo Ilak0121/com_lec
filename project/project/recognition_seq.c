@@ -11,11 +11,10 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   float *hidden_layers, *temp, **weights, **biases;
 
   // pre- calculated
-  int sizedepth = size * depth;
-  int sizedepth1 = size * (depth-1); 
-  int sizeIMG_SIZE = size * IMG_SIZE;
-  int sizesize = size * size;
-  int DIGIT_COUNTsize = DIGIT_COUNT * size;
+  int sizedepth = size==64 ? depth<<6 : size * depth;
+  int sizeIMG_SIZE = size==64 ? IMG_SIZE<<6 : size * IMG_SIZE;
+  int sizesize = size == 64 ? 1<<12 : size * size;
+  int DIGIT_COUNTsize = size == 64 ? DIGIT_COUNT << 6 : DIGIT_COUNT * size;
 
   hidden_layers = (float *)malloc((sizedepth)<<2); //sizeof(float) = 4
   //hidden_layers = (float *)malloc((size*depth)<<2); //sizeof(float) = 4
@@ -92,7 +91,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       for(y = 0; y < size; y++)
       {
         //sum += hidden_layers[size * (depth-1) + y] * weights[depth][cmVar1 + y];
-        sum += hidden_layers[sizedepth1 + y] * weights[depth][cmVar1 + y];
+        sum += hidden_layers[sizedepth - size + y] * weights[depth][cmVar1 + y];
       }
       sum += biases[depth][x];
       output[x] = sigmoid(sum);

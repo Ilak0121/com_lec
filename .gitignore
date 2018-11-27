@@ -12,8 +12,7 @@ hw1/basis(1)/
 *.pdf
 *.pptx
 *.swp
+*.o
 
-/project/project/*.o
 /project/project/recognition_seq
-/project/project/recognition_seq.o
 

@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  int mul_same = IMG_COUNT << 2;                //중복 곱셈 제거.
+  int mul_same = IMG_COUNT << 2;                //중복 곱셈 제거.   opt
 
   images = (float *)malloc(IMG_SIZE * mul_same);//sizeof(float)*IMG_COUNT*IMG_SIZE);
   labels = (int *)malloc(mul_same);             //sizeof(int)*IMG_COUNT);
@@ -42,14 +42,15 @@ int main(int argc, char** argv) {
   fread(&size, sizeof(int), 1, io_file);
   printf("size=%d, depth=%d\n", size, depth);
 
-  /*optimezing start*/
+  /*optimezing start*/ //opt
   if(size == 64 && depth == 2)                  //optimize for smalle network. fixed value
-      total_network_size = (1<<12)+(DIGIT_COUNT+IMG_SIZE+depth)<<6+DIGIT_COUNT;
+      total_network_size = (1<<12)+((DIGIT_COUNT+IMG_SIZE+depth)<<6)+DIGIT_COUNT;
   else
       total_network_size = size*size*(depth -1)+(DIGIT_COUNT+IMG_SIZE+depth)*size+DIGIT_COUNT;
   /*opt edn*/
   //total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
-  network = (float *)malloc(sizeof(float) * (total_network_size));
+
+  network = (float *)malloc((total_network_size)<<2);       //*sizeof(float)); opt
   fread(network, sizeof(float), total_network_size, io_file);
   fclose(io_file);
 
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
   timespec_subtract(&spent, &end, &start);
 
   correct = 0;
-  for(i = 0; i <IMG_COUNT; i++)
+  for(i = 0; i <IMG_COUNT; i++)     //loop unrolling maybe
   {
     if(labels_ans[i] == labels[i]) correct++;
   }
@@ -78,7 +79,7 @@ int main(int argc, char** argv) {
   // Write the result
   io_file = fopen(argv[2], "wb");
   fprintf(io_file, "%.3f\n", accuracy);
-  for(i = 0; i < IMG_COUNT; i++)
+  for(i = 0; i < IMG_COUNT; i++)    //loop maybe
   {
     fprintf(io_file,"%d, %d, %.3f\n", labels_ans[i], labels[i], confidences[i]);
   }
