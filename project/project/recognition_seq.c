@@ -26,7 +26,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   weights[0] = network;
   biases[0] = weights[0] + sizeIMG_SIZE;
   // 2. Hidden layers
-  for(i = 1; i < depth; i++)
+  for(i = 1; i < depth; i++) //depth가 1이면 loop unroll no need
   {
     weights[i] = network + (sizeIMG_SIZE + size) + (sizesize + size) * (i-1);
     biases[i] = weights[i] + sizesize;
@@ -55,8 +55,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     // From the input layer to the first hidden layer
     for(x = 0; x < size; x++)
     {
-  //    float sum = 0;
-  cmVar1 = IMG_SIZE * x;
+      //    float sum = 0;
+      cmVar1 = IMG_SIZE * x;
       for(y = 0; y < IMG_SIZE; y++)
       {
         sum += input[y] * weights[0][cmVar1 + y];
@@ -69,11 +69,11 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     for(j = 1; j < depth; j++)
     {
 
-      cmVar1 = size * (j-1);
+      cmVar1 = (j-1) << 6; //size * (j-1);
       for(x = 0; x < size; x++)
       {
     //    float sum = 0;
-       cmVar2 = size * x;
+       cmVar2 = x << 6;//size * x;
         for(y = 0; y < size; y++)
         {
           sum += hidden_layers[cmVar1 + y] * weights[j][cmVar2 + y];
@@ -86,7 +86,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     // From the last hidden layer to the output layer 
     for(x = 0; x < DIGIT_COUNT; x++)
     {
-      cmVar1 = size * x;
+      cmVar1 = x << 6;//size * x;
       //float sum = 0;
       for(y = 0; y < size; y++)
       {
