@@ -41,7 +41,14 @@ int main(int argc, char** argv) {
   fread(&depth, sizeof(int), 1, io_file);
   fread(&size, sizeof(int), 1, io_file);
   printf("size=%d, depth=%d\n", size, depth);
-  total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
+
+  /*optimezing start*/
+  if(size == 64 && depth == 2)                  //optimize for smalle network. fixed value
+      total_network_size = (1<<12)+(DIGIT_COUNT+IMG_SIZE+depth)<<6+DIGIT_COUNT;
+  else
+      total_network_size = size*size*(depth -1)+(DIGIT_COUNT+IMG_SIZE+depth)*size+DIGIT_COUNT;
+  /*opt edn*/
+  //total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
   network = (float *)malloc(sizeof(float) * (total_network_size));
   fread(network, sizeof(float), total_network_size, io_file);
   fclose(io_file);

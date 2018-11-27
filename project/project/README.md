@@ -1,4 +1,4 @@
-###Optimizing MNIST code
+### Optimizing MNIST code
 
 #### To Execute
 
