@@ -60,7 +60,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   cmVar1 = IMG_SIZE * x;
       for(y = 0; y < IMG_SIZE; y++)
       {
-        sum += input[y] * weights[0][IMG_SIZE * x + y];
+        sum += input[y] * weights[0][cmVar1 + y];
       }
       sum += biases[0][x];
       hidden_layers[x] = sigmoid(sum);
