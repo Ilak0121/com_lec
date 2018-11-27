@@ -69,11 +69,11 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     for(j = 1; j < depth; j++)
     {
 
-      cmVar1 = (j-1) << 6; //size * (j-1);
+      cmVar1 = size == 64 ? (j-1) << 6 : size * (j-1);
       for(x = 0; x < size; x++)
       {
     //    float sum = 0;
-       cmVar2 = x << 6;//size * x;
+       cmVar2 = size == 64 ? x << 6 : size * x;
         for(y = 0; y < size; y++)
         {
           sum += hidden_layers[cmVar1 + y] * weights[j][cmVar2 + y];
@@ -86,7 +86,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     // From the last hidden layer to the output layer 
     for(x = 0; x < DIGIT_COUNT; x++)
     {
-      cmVar1 = x << 6;//size * x;
+      cmVar1 = size==64 ? x << 6 : size * x;
       //float sum = 0;
       for(y = 0; y < size; y++)
       {
