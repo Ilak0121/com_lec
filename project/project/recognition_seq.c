@@ -51,59 +51,68 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   int label = 0;
   
   // Recognize numbers
-  for(i = 0; i < IMG_COUNT; i++)
+  for(i = 0; i < IMG_COUNT; ++i)
   {
     input = images + IMG_SIZE * i;
 
     // From the input layer to the first hidden layer
-    for(x = 0; x < size; x++)
+    for(x = 0; x < size; ++x)
     {
       sum = 0; //we should reset sum here.
       cmVar1 = IMG_SIZE * x;
-      for(y = 0; y < IMG_SIZE; y+=4)
+      for(y = 0; y < IMG_SIZE-1; y+=4)
       {
         sum += input[y] * weights[0][cmVar1 + y];
         sum += input[y+1] * weights[0][cmVar1 + y + 1];
         sum += input[y+2] * weights[0][cmVar1 + y + 2];
         sum += input[y+3] * weights[0][cmVar1 + y + 3];
       }
+      for(;y<IMG_SIZE;++y)
+          sum += input[y] * weights[0][cmVar1+y];
+
       sum += biases[0][x];
       hidden_layers[x] = sigmoid(sum);
     }
 
     // Between hidden layers
-    for(j = 1; j < depth; j++)
+    for(j = 1; j < depth; ++j)
     {
 
       cmVar1 = size == 64 ? (j-1) << 6 : size * (j-1);
-      for(x = 0; x < size; x++)
+      for(x = 0; x < size; ++x)
       {
        sum = 0; //we should reset sum here.
        cmVar2 = size == 64 ? x << 6 : size * x;
-        for(y = 0; y < size; y+=4)
+        for(y = 0; y < size-1; y+=4)
         {
           sum += hidden_layers[cmVar1 + y] * weights[j][cmVar2 + y];
           sum += hidden_layers[cmVar1 + y + 1] * weights[j][cmVar2 + y + 1];
           sum += hidden_layers[cmVar1 + y + 2] * weights[j][cmVar2 + y + 2];
           sum += hidden_layers[cmVar1 + y + 3] * weights[j][cmVar2 + y + 3];
         }
+        for(;y<size;++y)
+            sum += hidden_layers[cmVar1+y] * weights[j][cmVar2 + y];
+
         sum += biases[j][x];
         hidden_layers[cmVar1 + size + x] = sigmoid(sum);
       }
     }
     
     // From the last hidden layer to the output layer 
-    for(x = 0; x < DIGIT_COUNT; x++)
+    for(x = 0; x < DIGIT_COUNT; ++x)
     {
       sum = 0; //we should reset sum here.
       cmVar1 = size==64 ? x << 6 : size * x;
-      for(y = 0; y < size; y+=4)
+      for(y = 0; y < size-1; y+=4)
       {
         sum += hidden_layers[sizedepth - size + y] * weights[depth][cmVar1 + y];
         sum += hidden_layers[sizedepth - size + y + 1] * weights[depth][cmVar1 + y + 1];
         sum += hidden_layers[sizedepth - size + y + 2] * weights[depth][cmVar1 + y + 2];
         sum += hidden_layers[sizedepth - size + y + 3] * weights[depth][cmVar1 + y + 3];
       }
+      for(;y<size;++y)
+          sum += hidden_layers[sizedepth - size + y]*weights[depth][cmVar1+y];
+
       sum += biases[depth][x];
       output[x] = sigmoid(sum);
     }
@@ -111,7 +120,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     // Find the answer
     max = 0;
     label = 0;
-    for(x = 0; x < DIGIT_COUNT; x++)
+    for(x = 0; x < DIGIT_COUNT; ++x)
     {
       if(output[x] > max)
       {

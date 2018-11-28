@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
   sec1_count ++;
 
    // Ref : HW1
-   printf("%-20s %s : %.9lf (%d)\n","main", "[ms/call] (n called)",1000*(sec1-sec2),sec1_count);
+   printf("%-20s %s : %.9lf (%d)\n","main", "[ms/call] (n called)",1000*(sec1-sec2)/sec1_count,sec1_count);
    printf("%-20s %s : %.9lf (%d)\n","recognition", "[ms/call] (n called)",1000*sec2/sec2_count,sec2_count);
 
 
