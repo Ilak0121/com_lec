@@ -2,7 +2,7 @@ CC=~/arm/bin/clang
 #CC=path of your cross compiler
 CFLAGS=-Wall -g 
 
-LIBS = -lm 
+LIBS = -lm
 LDFLAGS = ${LIBS}
 
 
