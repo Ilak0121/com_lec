@@ -1,8 +1,8 @@
-CC=gcc
+CC=~/arm/bin/clang
 #CC=path of your cross compiler
 CFLAGS=-Wall -g 
 
-LIBS = -lm -lrt
+LIBS = -lm 
 LDFLAGS = ${LIBS}
 
 
@@ -14,7 +14,7 @@ all: seq
 seq: recognition_seq
 
 recognition_seq: recognition_seq.o main.o
-	${CC} $^ -o $@ ${LDFLAGS}
+	${CC} $^ -pie -o $@ ${LDFLAGS}
 
 
 
