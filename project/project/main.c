@@ -9,6 +9,13 @@
 int timespec_subtract(struct timespec*, struct timespec*, struct timespec*);
 void load_MNIST(float * images, int * labels);
 
+struct timespec mainS, mainE;
+struct timespec recS, recE;
+double sec1;
+double sec2;
+int sec1_count;
+int sec2_count;
+
 int main(int argc, char** argv) {
         
   clock_gettime(CLOCK_MONOTONIC, &mainS);

@@ -4,11 +4,13 @@
 
 #include <time.h>
 
-struct timespec mainS, mainE;
-struct timespec recS, recE;
+extern struct timespec mainS, mainE;
+extern struct timespec recS, recE;
 
-double sec1, sec2;
-int sec1_count, sec2_count;
+extern double sec1;
+extern double sec2;
+extern int sec1_count;
+extern int sec2_count;
 
 
 void recognition(float * images, float * network, int depth, int size, int * labels, float * confidences);
