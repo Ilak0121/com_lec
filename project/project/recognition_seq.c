@@ -7,8 +7,11 @@
 
 void recognition(float * images, float * network, int depth, int size, int * labels, float * confidences)
 {
+  clock_gettime(CLOCK_MONOTONIC, &recS);
+
   int i, j, x, y;
-  float *hidden_layers, *temp, **weights, **biases;
+  //float *hidden_layers, *temp, **weights, **biases;
+  float *hidden_layers, **weights, **biases; // Delete unused variable *temp
 
   // pre- calculated
   int sizedepth = size==64 ? depth<<6 : size * depth;
@@ -121,4 +124,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     confidences[i] = max;
     labels[i] = label;
   }
+  
+  clock_gettime(CLOCK_MONOTONIC, &recE);
+  sec2 += (recE.tv_sec - recS.tv_sec) + 1e-9 * (recE.tv_nsec - recS.tv_nsec);
+  sec2_count ++;
 }

@@ -10,6 +10,9 @@ int timespec_subtract(struct timespec*, struct timespec*, struct timespec*);
 void load_MNIST(float * images, int * labels);
 
 int main(int argc, char** argv) {
+        
+  clock_gettime(CLOCK_MONOTONIC, &mainS);
+        
   float *images, *network, *confidences, accuracy;
   int *labels;
   int *labels_ans;
@@ -105,6 +108,17 @@ int timespec_subtract(struct timespec* result, struct timespec *x, struct timesp
      tv_nsec is certainly positive. */
   result->tv_sec = x->tv_sec - y->tv_sec;
   result->tv_nsec = x->tv_nsec - y->tv_nsec;
+
+  
+  clock_gettime(CLOCK_MONOTONIC, &mainE);
+  sec1 += (mainE.tv_sec - mainS.tv_sec) + 1e-9 * (mainE.tv_nsec - mainS.tv_nsec);
+  sec1_count ++;
+
+   // Ref : HW1
+   printf("%-20s %s : %.9lf (%d)\n","main", "[ms/call] (n called)",1000*sec1/sec1_count,sec1_count);
+
+   printf("%-20s %s : %.9lf (%d)\n","recognition", "[ms/call] (n called)",1000*sec2/sec2_count,sec2_count);
+
 
   /* Return 1 if result is negative. */
   return x->tv_sec < y->tv_sec;
