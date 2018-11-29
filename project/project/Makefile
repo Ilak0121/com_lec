@@ -1,9 +1,8 @@
 CC=~/arm/bin/clang
-#CC=path of your cross compiler
-CFLAGS=-Wall -g 
+CFLAGS=-Wall -g -fPIE
 
 LIBS = -lm
-LDFLAGS = ${LIBS}
+LDFLAGS = ${LIBS} -fPIE -pie
 
 
 all: seq
