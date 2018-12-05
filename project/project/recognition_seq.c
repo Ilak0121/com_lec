@@ -63,7 +63,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     {
       sum = vdupq_n_f32(0); //we should reset sum here.
       cmVar1 = IMG_SIZE * x;
-      for(y = 0; y < IMG_SIZE-1; y++)
+      for(y = 0; y < IMG_SIZE-1; y+=4)
       {
         //sum += input[y] * weights[0][cmVar1 + y];
         //sum += input[y+1] * weights[0][cmVar1 + y + 1];
@@ -92,7 +92,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       {
        sum = vdupq_n_f32(0); //we should reset sum here.
        cmVar2 = size == 64 ? x << 6 : size * x;
-        for(y = 0; y < size-1; y++)
+        for(y = 0; y < size-1; y+=4)
         {
         //  sum += hidden_layers[cmVar1 + y] * weights[j][cmVar2 + y];
         //  sum += hidden_layers[cmVar1 + y + 1] * weights[j][cmVar2 + y + 1];
@@ -117,7 +117,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     {
       sum = vdupq_n_f32(0); //we should reset sum here.
       cmVar1 = size==64 ? x << 6 : size * x;
-      for(y = 0; y < size-1; y++)
+      for(y = 0; y < size-1; y+=4)
       {
         //sum += hidden_layers[sizedepth - size + y] * weights[depth][cmVar1 + y];
         //sum += hidden_layers[sizedepth - size + y + 1] * weights[depth][cmVar1 + y + 1];
@@ -131,6 +131,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       }
       for(;y<size;++y)
           sum[0] += hidden_layers[sizedepth - size + y]*weights[depth][cmVar1+y];
+	sum[0] += sum[1]+sum[2]+sum[3];
 
       sum[0] += biases[depth][x];
       output[x] = sigmoid(sum[0]);
