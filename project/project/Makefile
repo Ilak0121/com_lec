@@ -1,8 +1,8 @@
 CC=~/arm/bin/clang
-CFLAGS=-Wall -g -fPIE
+CFLAGS=-Wall -g 
 
 LIBS = -lm
-LDFLAGS = ${LIBS} -fPIE -pie
+LDFLAGS = ${LIBS} 
 
 
 all: seq
