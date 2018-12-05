@@ -51,6 +51,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
   float max = 0;
   int label = 0;
+  double test= 0;
   
   // Recognize numbers
   for(i = 0; i < IMG_COUNT; ++i)
@@ -78,9 +79,11 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
       for(;y<IMG_SIZE;++y)
           sum[0] += input[y] * weights[0][cmVar1+y];
-      sum[0] += sum[1]+sum[2]+sum[3];
-      sum[0] += biases[0][x];
-      hidden_layers[x] = sigmoid(sum[0]);
+
+      //sum[0] += sum[1]+sum[2]+sum[3];
+      test = sum[0]+sum[1]+sum[2]+sum[3]+biases[0][x];
+      //sum[0] += biases[0][x];
+      hidden_layers[x] = sigmoid(test);//sum[0]);
     }
 
     // Between hidden layers
@@ -101,14 +104,14 @@ void recognition(float * images, float * network, int depth, int size, int * lab
                   
           Avec = vld1q_f32(&hidden_layers[cmVar1 + y]);
           Bvec = vld1q_f32(&weights[j][cmVar2+y]);
-
-	  sum = vmlaq_f32(sum, Avec, Bvec );         
+          
+          sum = vmlaq_f32(sum, Avec, Bvec );         
         }
         for(;y<size;++y)
             sum[0] += hidden_layers[cmVar1+y] * weights[j][cmVar2 + y];
-	sum[0] += sum[1]+sum[2]+sum[3];
-        sum[0] += biases[j][x];
-        hidden_layers[cmVar1 + size + x] = sigmoid(sum[0]);
+        test = sum[0]+sum[1]+sum[2]+sum[3]+biases[j][x];
+        //sum[0] += biases[j][x];
+        hidden_layers[cmVar1 + size + x] = sigmoid(test);//sum[0]);
       }
     }
     
@@ -121,26 +124,26 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       {
         //sum += hidden_layers[sizedepth - size + y] * weights[depth][cmVar1 + y];
         //sum += hidden_layers[sizedepth - size + y + 1] * weights[depth][cmVar1 + y + 1];
-       // sum += hidden_layers[sizedepth - size + y + 2] * weights[depth][cmVar1 + y + 2];
-       // sum += hidden_layers[sizedepth - size + y + 3] * weights[depth][cmVar1 + y + 3];
+        // sum += hidden_layers[sizedepth - size + y + 2] * weights[depth][cmVar1 + y + 2];
+        // sum += hidden_layers[sizedepth - size + y + 3] * weights[depth][cmVar1 + y + 3];
 
         Avec = vld1q_f32(&hidden_layers[sizedepth - size + y]);
         Bvec = vld1q_f32(&weights[depth][cmVar1+y]);
         
-	sum = vmlaq_f32(sum, Avec, Bvec ); 
+        sum = vmlaq_f32(sum, Avec, Bvec ); 
       }
       for(;y<size;++y)
           sum[0] += hidden_layers[sizedepth - size + y]*weights[depth][cmVar1+y];
+      test = sum[0] + sum[1]+sum[2]+sum[3];
 
-      sum[0] += biases[depth][x];
-      output[x] = sigmoid(sum[0]);
+      test += biases[depth][x];
+      output[x] = sigmoid(test);
     }
 
     // Find the answer
     max = 0;
     label = 0;
-    for(x = 0; x < DIGIT_COUNT; ++x)
-    {
+    for(x = 0; x < DIGIT_COUNT; ++x){
       if(output[x] > max)
       {
         label = x;

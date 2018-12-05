@@ -43,11 +43,11 @@ int main(int argc, char** argv) {
   confidences = (float *)malloc(mul_same);          //sizeof(float)*IMG_COUNT);
 
   io_file = fopen(argv[1], "r");
-  if(!io_file)
-  {
+  if(!io_file){
     fprintf(stderr, "Invalid network file %s!\n", argv[1]);
     exit(EXIT_FAILURE);
   }
+
   fread(&depth, sizeof(int), 1, io_file);
   fread(&size, sizeof(int), 1, io_file);
   printf("size=%d, depth=%d\n", size, depth);
