@@ -1,5 +1,5 @@
 CC=~/arm/bin/clang
-CFLAGS=-Wall -g 
+CFLAGS=-Wall -g -mcpu=cortex-a53
 
 LIBS = -lm
 LDFLAGS = ${LIBS} 

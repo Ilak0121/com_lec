@@ -3,6 +3,7 @@
 #define DIGIT_COUNT 10
 
 #include <time.h>
+#include <arm_neon.h>
 
 extern struct timespec mainS, mainE;
 extern struct timespec recS, recE;
