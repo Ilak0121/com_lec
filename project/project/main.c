@@ -37,10 +37,10 @@ int main(int argc, char** argv) {
 
   int mul_same = IMG_COUNT << 2;                //중복 곱셈 제거.   opt
 
-  images = (float *)calloc(IMG_SIZE, mul_same);    //sizeof(float)*IMG_COUNT*IMG_SIZE);
-  labels = (int *)calloc(mul_same,1);                 //sizeof(int)*IMG_COUNT);
-  labels_ans = (int *)calloc(mul_same,1);             //sizeof(int)*IMG_COUNT);
-  confidences = (float *)calloc(mul_same,1);          //sizeof(float)*IMG_COUNT);
+  images = (float *)malloc(IMG_SIZE*mul_same);    //sizeof(float)*IMG_COUNT*IMG_SIZE);
+  labels = (int *)malloc(mul_same);                 //sizeof(int)*IMG_COUNT);
+  labels_ans = (int *)malloc(mul_same);             //sizeof(int)*IMG_COUNT);
+  confidences = (float *)malloc(mul_same);          //sizeof(float)*IMG_COUNT);
 
   io_file = fopen(argv[1], "r");
   if(!io_file)
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
   /*opt edn*/
   //total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
 
-  network = (float *)calloc((total_network_size),4);       //*sizeof(float)); opt
+  network = (float *)malloc((total_network_size)<<2);       //*sizeof(float)); opt
   fread(network, sizeof(float), total_network_size, io_file);
   fclose(io_file);
 
