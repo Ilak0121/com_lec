@@ -43,7 +43,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   float * input;
   float32x4_t Avec, Bvec;
 
- // float output[DIGIT_COUNT];
+  float output[DIGIT_COUNT];
   float32x4_t sum;
 
   int cmVar1 = 0; //variable for code motion
@@ -58,7 +58,6 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     //input = images + IMG_SIZE * i;
     (input) = (images + IMG_SIZE * i);
 
-    float output[DIGIT_COUNT];
     // From the input layer to the first hidden layer
     for(x = 0; x < size; ++x)
     {
@@ -133,7 +132,6 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       for(;y<size;++y)
           sum[0] += hidden_layers[sizedepth - size + y]*weights[depth][cmVar1+y];
 
-      sum[0] += sum[1]+sum[2]+sum[3];
       sum[0] += biases[depth][x];
       output[x] = sigmoid(sum[0]);
     }
@@ -141,7 +139,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     // Find the answer
     max = 0;
     label = 0;
-    for(x = 0; x < DIGIT_COUNT; x++)
+    for(x = 0; x < DIGIT_COUNT; ++x)
     {
       if(output[x] > max)
       {
