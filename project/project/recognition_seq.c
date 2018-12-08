@@ -45,7 +45,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
   int IS_X;
   
-  float* data = (float*)malloc(sizeof(float) * 64);
+  float* data = (float*)calloc(sizeof(float), 64);
 
   // Recognize numbers
   for(i = 0; i < IMG_COUNT; i++)
@@ -79,6 +79,10 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
       /*----------------------------------------------*/
       sum = vdupq_n_f32(0); //we should reset sum here.
+      for(y=0;y<size;y++)
+          data[y] += hidden_layers[x]*weights[1][size*y+x];
+
+      /*
       for(y=0;y<size;y+=4){
           Avec = vld1q_f32(&hidden_layers[x]);
           Bvec = vld1q_lane_f32(&weights[1][size*y+x],Bvec,0);
@@ -87,14 +91,18 @@ void recognition(float * images, float * network, int depth, int size, int * lab
           Bvec = vld1q_lane_f32(&weights[1][size*(y+3)+x],Bvec,3);
           sum = vmlaq_f32(sum,Avec,Bvec);
           vst1q_f32(&data[y],sum);
-      }
+      }*/
     }
     sum = vdupq_n_f32(0); //we should reset sum here.
     for(x=0;x<size;x+=4){
         Avec = vld1q_f32(&data[x]);
         Bvec = vld1q_f32(&biases[1][x]);
         sum=vaddq_f32(Avec,Bvec);
-        vst1q_f32(&hidden_layers[size+x],sum);
+        //vst1q_f32(&hidden_layers[size+x],sum);
+        hidden_layers[size+x+0] = sum[0];
+        hidden_layers[size+x+1] = sum[1];
+        hidden_layers[size+x+2] = sum[2];
+        hidden_layers[size+x+3] = sum[3];
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
