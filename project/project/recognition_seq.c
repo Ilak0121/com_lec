@@ -78,12 +78,20 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
       /*----------------------------------------------*/
+      sum = vdupq_n_f32(0); //we should reset sum here.
       for(y=0;y<size;y++)
           data[y] += hidden_layers[x] * weights[1][size*y+x];
     }
-    for(x=0;x<size;x++){
-        data[x] += biases[1][x];
-        hidden_layers[size+x] = sigmoid(data[x]);
+    sum = vdupq_n_f32(0); //we should reset sum here.
+    for(x=0;x<size;x+=4){
+        Avec = vld1q_f32(&data[x]);
+        Bvec = vld1q_f32(&biases[1][x]);
+        sum=vaddq_f32(Avec,Bvec);
+        hidden_layers[size+x] = sum[0];
+        hidden_layers[size+x+1] = sum[1];
+        hidden_layers[size+x+2] = sum[2];
+        hidden_layers[size+x+3] = sum[3];
+
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
