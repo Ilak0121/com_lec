@@ -6,18 +6,22 @@
 
 #include "recognition.h"
 
+struct timespec mainS, mainE, forS;
+struct timespec recS, recE, forE;
+
+double sec1, sec2;
+int sec1_count, sec2_count;
+
+double for1_s, for2_s, for3_s;
+/*-------------------------------------*/
+
+void recognition(float * images, float * network, int depth, int size, int * labels, float * confidences);
+
 int timespec_subtract(struct timespec*, struct timespec*, struct timespec*);
 void load_MNIST(float * images, int * labels);
 
-struct timespec mainS, mainE;
-struct timespec recS, recE;
-double sec1;
-double sec2;
-int sec1_count;
-int sec2_count;
-
 int main(int argc, char** argv) {
-        
+
   clock_gettime(CLOCK_MONOTONIC, &mainS);
         
   float *images, *network, *confidences, accuracy;
@@ -35,32 +39,22 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  int mul_same = IMG_COUNT << 2;                //중복 곱셈 제거.   opt
-
-  images = (float *)malloc(IMG_SIZE*mul_same);    //sizeof(float)*IMG_COUNT*IMG_SIZE);
-  labels = (int *)malloc(mul_same);                 //sizeof(int)*IMG_COUNT);
-  labels_ans = (int *)malloc(mul_same);             //sizeof(int)*IMG_COUNT);
-  confidences = (float *)malloc(mul_same);          //sizeof(float)*IMG_COUNT);
+  images = (float *)malloc(sizeof(float)*IMG_COUNT*IMG_SIZE);
+  labels = (int *)malloc(sizeof(int)*IMG_COUNT);
+  labels_ans = (int *)malloc(sizeof(int)*IMG_COUNT);
+  confidences = (float *)malloc(sizeof(float)*IMG_COUNT);
 
   io_file = fopen(argv[1], "r");
-  if(!io_file){
+  if(!io_file)
+  {
     fprintf(stderr, "Invalid network file %s!\n", argv[1]);
     exit(EXIT_FAILURE);
   }
-
   fread(&depth, sizeof(int), 1, io_file);
   fread(&size, sizeof(int), 1, io_file);
   printf("size=%d, depth=%d\n", size, depth);
-
-  /*optimezing start*/ //opt
-  if(size == 64 && depth == 2)                  //optimize for smalle network. fixed value
-      total_network_size = (1<<12)+((DIGIT_COUNT+IMG_SIZE+depth)<<6)+DIGIT_COUNT;
-  else
-      total_network_size = size*size*(depth -1)+(DIGIT_COUNT+IMG_SIZE+depth)*size+DIGIT_COUNT;
-  /*opt edn*/
-  //total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
-
-  network = (float *)malloc((total_network_size)<<2);       //*sizeof(float)); opt
+  total_network_size = (IMG_SIZE * size + size) + (depth - 1) * (size * size + size) + size  * DIGIT_COUNT + DIGIT_COUNT;
+  network = (float *)malloc(sizeof(float) * (total_network_size));
   fread(network, sizeof(float), total_network_size, io_file);
   fclose(io_file);
 
@@ -78,7 +72,7 @@ int main(int argc, char** argv) {
   timespec_subtract(&spent, &end, &start);
 
   correct = 0;
-  for(i = 0; i <IMG_COUNT; i++)     //loop unrolling maybe
+  for(i = 0; i <IMG_COUNT; i++)
   {
     if(labels_ans[i] == labels[i]) correct++;
   }
@@ -89,7 +83,7 @@ int main(int argc, char** argv) {
   // Write the result
   io_file = fopen(argv[2], "wb");
   fprintf(io_file, "%.3f\n", accuracy);
-  for(i = 0; i < IMG_COUNT; i++)    //loop maybe
+  for(i = 0; i < IMG_COUNT; i++)
   {
     fprintf(io_file,"%d, %d, %.3f\n", labels_ans[i], labels[i], confidences[i]);
   }
@@ -99,9 +93,16 @@ int main(int argc, char** argv) {
   sec1 += (mainE.tv_sec - mainS.tv_sec) + 1e-9 * (mainE.tv_nsec - mainS.tv_nsec);
   sec1_count ++;
 
-   // Ref : HW1
-   printf("%-20s %s : %.9lf (%d)\n","main", "[ms/call] (n called)",1000*(sec1-sec2)/sec1_count,sec1_count);
-   printf("%-20s %s : %.9lf (%d)\n","recognition", "[ms/call] (n called)",1000*sec2/sec2_count,sec2_count);
+  // Ref : HW1
+  printf("%-20s %s : %.9lf (%d)\n","main", "[ms/call] (n called)",1000*(sec1-sec2),sec1_count);
+        
+  printf("%-20s %s : %.9lf (%d)\n","recognition", "[ms/call] (n called)",1000*(sec2),sec2_count);
+               
+
+  printf("---------------------------------------------\n");
+  printf("%-20s %s : %.9lf (%d)\n","for1_time", "[ms/call] (n called)",1000*(for1_s),IMG_COUNT);
+  printf("%-20s %s : %.9lf (%d)\n","for2_time", "[ms/call] (n called)",1000*(for2_s),IMG_COUNT);
+  printf("%-20s %s : %.9lf (%d)\n","for3_time", "[ms/call] (n called)",1000*(for3_s),IMG_COUNT);
 
 
   return 0;
@@ -124,7 +125,6 @@ int timespec_subtract(struct timespec* result, struct timespec *x, struct timesp
      tv_nsec is certainly positive. */
   result->tv_sec = x->tv_sec - y->tv_sec;
   result->tv_nsec = x->tv_nsec - y->tv_nsec;
-
 
   /* Return 1 if result is negative. */
   return x->tv_sec < y->tv_sec;
