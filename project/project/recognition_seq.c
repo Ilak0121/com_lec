@@ -44,7 +44,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   float output[DIGIT_COUNT];
 
   int IS_X;
-
+  
+  float* data = (float*)malloc(sizeof(float) * 64);
 
   // Recognize numbers
   for(i = 0; i < IMG_COUNT; i++)
@@ -53,6 +54,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
     // From the input layer to the first hidden layer
     //clock_gettime(CLOCK_MONOTONIC,&forS);
+
     for(x = 0; x < size; x++)
     {
 
@@ -76,7 +78,12 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
       /*----------------------------------------------*/
-      hidden_layers[size+x] = sigmoid (hidden_layers[x] * weights[0][size*x]+biases[1][x]);
+      for(y=0;y<size;y++)
+          data[y] += hidden_layers[x] * weights[1][size*y+x];
+    }
+    for(x=0;x<size;x++){
+        data[x] += biases[1][x];
+        hidden_layers[size+x] = sigmoid(data[x]);
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
