@@ -45,7 +45,9 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
   int IS_X;
   
-  float* data = (float*)calloc(sizeof(float), 64);
+  float* data = (float*)calloc(size,sizeof(float));
+  for(y=0; y<size; y++)
+      data[y] =0;
 
   // Recognize numbers
   for(i = 0; i < IMG_COUNT; i++)
@@ -77,11 +79,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += sum[1]+sum[2]+sum[3];
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
-      /*----------------------------------------------*/
-      sum = vdupq_n_f32(0); //we should reset sum here.
-      for(y=0;y<size;y++)
-          data[y] += hidden_layers[x]*weights[1][size*y+x];
 
+      /*----------------------------------------------*/
       /*
       for(y=0;y<size;y+=4){
           Avec = vld1q_f32(&hidden_layers[x]);
@@ -92,25 +91,20 @@ void recognition(float * images, float * network, int depth, int size, int * lab
           sum = vmlaq_f32(sum,Avec,Bvec);
           vst1q_f32(&data[y],sum);
       }*/
+      for(y=0;y<size;y++){
+          if(x==0) data[y]=biases[1][y];
+          data[y] += hidden_layers[x]*weights[1][x+size*y];
+      }
+
     }
-    sum = vdupq_n_f32(0); //we should reset sum here.
-    for(x=0;x<size;x+=4){
-        Avec = vld1q_f32(&data[x]);
-        Bvec = vld1q_f32(&biases[1][x]);
-        sum=vaddq_f32(Avec,Bvec);
-        //vst1q_f32(&hidden_layers[size+x],sum);
-        hidden_layers[size+x+0] = sum[0];
-        hidden_layers[size+x+1] = sum[1];
-        hidden_layers[size+x+2] = sum[2];
-        hidden_layers[size+x+3] = sum[3];
+    for(x=0;x<size;x++){
+        hidden_layers[size  + x] = sigmoid(data[x]);
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
     for1_s += (forE.tv_sec - forS.tv_sec) + 1e-9 * (forE.tv_nsec - forS.tv_nsec);
 
     //Between hidden layers
-    clock_gettime(CLOCK_MONOTONIC,&forS);
-
     /*--------------------------------------------------------*///this area will not be execute in small network
     clock_gettime(CLOCK_MONOTONIC,&forS);
     for(j = 2; j < depth; j++)
