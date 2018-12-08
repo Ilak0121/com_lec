@@ -80,22 +80,13 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
-      /*----------------------------------------------*/
-      /*
-      for(y=0;y<size;y+=4){
-          Avec = vld1q_f32(&hidden_layers[x]);
-          Bvec = vld1q_lane_f32(&weights[1][size*y+x],Bvec,0);
-          Bvec = vld1q_lane_f32(&weights[1][size*(y+1)+x],Bvec,1);
-          Bvec = vld1q_lane_f32(&weights[1][size*(y+2)+x],Bvec,2);
-          Bvec = vld1q_lane_f32(&weights[1][size*(y+3)+x],Bvec,3);
-          sum = vmlaq_f32(sum,Avec,Bvec);
-          vst1q_f32(&data[y],sum);
-      }*/
-      for(y=0;y<size;y+=4){
-          if(x==0) data[y+0]=biases[1][y+0];
-          if(x==0) data[y+1]=biases[1][y+1];
-          if(x==0) data[y+2]=biases[1][y+2];
-          if(x==0) data[y+3]=biases[1][y+3];
+      for(y=0;y<size;y+=4){         //cache tilling
+          if(x==0){ 
+              data[y+0]=biases[1][y+0];
+              data[y+1]=biases[1][y+1];
+              data[y+2]=biases[1][y+2];
+              data[y+3]=biases[1][y+3];
+          }
           data[y+0] += hidden_layers[x]*weights[1][x+size*(y+0)];
           data[y+1] += hidden_layers[x]*weights[1][x+size*(y+1)];
           data[y+2] += hidden_layers[x]*weights[1][x+size*(y+2)];
