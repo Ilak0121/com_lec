@@ -79,8 +79,15 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
       /*----------------------------------------------*/
       sum = vdupq_n_f32(0); //we should reset sum here.
-      for(y=0;y<size;y++)
-          data[y] += hidden_layers[x] * weights[1][size*y+x];
+      for(y=0;y<size;y+=4){
+          Avec = vld1q_f32(&hidden_layers[x]);
+          Bvec = vld1q_lane_f32(&weights[1][size*y+x],Bvec,0);
+          Bvec = vld1q_lane_f32(&weights[1][size*(y+1)+x],Bvec,1);
+          Bvec = vld1q_lane_f32(&weights[1][size*(y+2)+x],Bvec,2);
+          Bvec = vld1q_lane_f32(&weights[1][size*(y+3)+x],Bvec,3);
+          sum = vmlaq_f32(sum,Avec,Bvec);
+          vst1q_f32(&data[y],sum);
+      }
     }
     sum = vdupq_n_f32(0); //we should reset sum here.
     for(x=0;x<size;x+=4){
