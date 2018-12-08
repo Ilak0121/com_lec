@@ -76,7 +76,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
       /*----------------------------------------------*/
-      hidden_layer[size+x] = sigmoid (hidden_layer[x] * weights[0][size*x]+biases[1][x]);
+      hidden_layers[size+x] = sigmoid (hidden_layers[x] * weights[0][size*x]+biases[1][x]);
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
