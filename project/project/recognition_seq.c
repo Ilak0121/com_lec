@@ -15,7 +15,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
   int i, j, x, y;
   float *hidden_layers, **weights, **biases; //temp delete 
 
-  hidden_layers = (float *)malloc(sizeof(float) * size * depth);
+  hidden_layers = (float *)malloc(sizeof(float) * size * depth);//4*64*2 in small net
   weights = (float **)malloc(sizeof(float *) * (depth + 1));
   biases = (float **)malloc(sizeof(float *) * (depth + 1));
 
@@ -52,14 +52,14 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     input = images + IMG_SIZE * i;
 
     // From the input layer to the first hidden layer
-    clock_gettime(CLOCK_MONOTONIC,&forS);
+    //clock_gettime(CLOCK_MONOTONIC,&forS);
     for(x = 0; x < size; x++)
     {
 
       //sum = 0; //opt
       sum = vdupq_n_f32(0); //we should reset sum here.
       IS_X = IMG_SIZE*x;
-      for(y = 0; y < IMG_SIZE-DEGREE; y+=DEGREE)
+      for(y = 0; y < IMG_SIZE-DEGREE; y+=DEGREE) // each images
       {
         //sum += input[y] * weights[0][IS_X + y];
         Avec = vld1q_f32(&input[y]);
@@ -72,15 +72,31 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
       sum[0] += sum[1]+sum[2]+sum[3];
       sum[0] += biases[0][x];
-      hidden_layers[x] = sigmoid(sum[0]);
+      hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
+      /*----------------------------------------------*/
+      sum =vdupq_n_f32(0);
+      //sum = 0; //opt
+      for(y = 0; y < size-DEGREE; y+=DEGREE){
+        //sum += hidden_layers[size * (j-1) + y] * weights[j][size * x + y];
+        Avec = vld1q_f32(&hidden_layers[size*(0)+y]); //0~63, 64~127, 128 ~ 64*3-1
+        Bvec = vld1q_f32(&weights[0][size*x+y]); // j,
+        sum = vmlaq_f32(sum,Avec,Bvec); 
+      }
+      for(;y<size;y++)      //left cycle
+          sum[0] += hidden_layers[size*(0)+y]*weights[1][size*x+y];
+      sum[0] += sum[1]+sum[2]+sum[3]; 
+      sum[0] += biases[1][x];
+      hidden_layers[size * 1 + x] = sigmoid(sum[0]);
     }
+
     clock_gettime(CLOCK_MONOTONIC,&forE);
     for1_s += (forE.tv_sec - forS.tv_sec) + 1e-9 * (forE.tv_nsec - forS.tv_nsec);
 
-    // Between hidden layers
-    int jsize=0;
+    //Between hidden layers
     clock_gettime(CLOCK_MONOTONIC,&forS);
-    for(j = 1; j < depth; j++)
+
+    clock_gettime(CLOCK_MONOTONIC,&forS);
+    for(j = 2; j < depth; j++)
     {
       for(x = 0; x < size; x++)
       {
@@ -89,8 +105,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
         for(y = 0; y < size-DEGREE; y+=DEGREE)
         {
           //sum += hidden_layers[size * (j-1) + y] * weights[j][size * x + y];
-          Avec = vld1q_f32(&hidden_layers[size*(j-1)+y]);
-          Bvec = vld1q_f32(&weights[j][size*x+y]);
+          Avec = vld1q_f32(&hidden_layers[size*(j-1)+y]); //0~63, 64~127, 128 ~ 64*3-1
+          Bvec = vld1q_f32(&weights[j][size*x+y]); // j,
           sum = vmlaq_f32(sum,Avec,Bvec);
         }
         for(;y<size;y++)      //left cycle
