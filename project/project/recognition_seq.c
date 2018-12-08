@@ -87,11 +87,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
         Avec = vld1q_f32(&data[x]);
         Bvec = vld1q_f32(&biases[1][x]);
         sum=vaddq_f32(Avec,Bvec);
-        hidden_layers[size+x] = sum[0];
-        hidden_layers[size+x+1] = sum[1];
-        hidden_layers[size+x+2] = sum[2];
-        hidden_layers[size+x+3] = sum[3];
-
+        vst1q_f32(&hidden_layers[size+x],sum);
     }
 
     clock_gettime(CLOCK_MONOTONIC,&forE);
