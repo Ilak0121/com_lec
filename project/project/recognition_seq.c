@@ -80,6 +80,7 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
+      #pragma omp parallel for
       for(y=0;y<size;y+=4){         //cache tilling
           if(x==0){ 
               data[y+0]=biases[1][y+0];
