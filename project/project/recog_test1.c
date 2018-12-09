@@ -81,26 +81,28 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
       /*----------------------------------------------*/
-      for(y=0;y<size;y+=4){
-          sum = vdupq_n_f32(0); //we should reset sum here.
-          if(x==0) {
-              data[y]=biases[1][y];
-              data[y+1]=biases[1][y+1];
-              data[y+2]=biases[1][y+2];
-              data[y+3]=biases[1][y+3];}
-          //data[y] += hidden_layers[x]*weights[1][x+size*y];
-          Avec = vld1q_f32(&hidden_layers[x]);
-          int test =size*y+x;
-          Bvec = vld1q_lane_f32(&weights[1][test],Bvec,0);
-          Bvec = vld1q_lane_f32(&weights[1][test+size],Bvec,1);
-          Bvec = vld1q_lane_f32(&weights[1][test+size+size],Bvec,2);
-          Bvec = vld1q_lane_f32(&weights[1][test+size+size+size],Bvec,3);
-          sum = vmlaq_f32(sum,Avec,Bvec);
-          //vst1q_f32(&data[y],sum);
-          data[y] += vgetq_lane_f32(sum,0); 
-          data[y+1] += vgetq_lane_f32(sum,1); 
-          data[y+2] += vgetq_lane_f32(sum,2); 
-          data[y+3] += vgetq_lane_f32(sum,3); 
+      if(x%4 == 0){ //x should do with period 4
+        for(y=0;y<size;y+=4){
+            sum = vdupq_n_f32(0); //we should reset sum here.
+            if(x==0) {
+                data[y]=biases[1][y];
+                data[y+1]=biases[1][y+1];
+                data[y+2]=biases[1][y+2];
+                data[y+3]=biases[1][y+3];}
+            //data[y] += hidden_layers[x]*weights[1][x+size*y];
+            Avec = vld1q_f32(&hidden_layers[x]);
+            int test =size*y+x;
+            Bvec = vld1q_lane_f32(&weights[1][test],Bvec,0);
+            Bvec = vld1q_lane_f32(&weights[1][test+size],Bvec,1);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size],Bvec,2);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size+size],Bvec,3);
+            sum = vmlaq_f32(sum,Avec,Bvec);
+            //vst1q_f32(&data[y],sum);
+            data[y] += vgetq_lane_f32(sum,0); 
+            data[y+1] += vgetq_lane_f32(sum,1); 
+            data[y+2] += vgetq_lane_f32(sum,2); 
+            data[y+3] += vgetq_lane_f32(sum,3); 
+        }
       }
 
     }
