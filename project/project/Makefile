@@ -1,8 +1,8 @@
 CC=~/arm/bin/clang
-CFLAGS=-Wall -g -mcpu=cortex-a53 -fopenmp
+CFLAGS=-Wall -g -mcpu=cortex-a53 
 
 LIBS = -lm 
-LDFLAGS = ${LIBS} -fopenmp
+LDFLAGS = ${LIBS} 
 
 
 all: seq
