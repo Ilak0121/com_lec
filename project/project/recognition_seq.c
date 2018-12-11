@@ -80,18 +80,35 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
-      #pragma omp parallel for
-      for(y=0;y<size;y+=4){         //cache tilling
-          if(x==0){ 
+      if(x==0){ 
+          for(y=0;y<size;y+=4){         //cache tilling
               data[y+0]=biases[1][y+0];
               data[y+1]=biases[1][y+1];
               data[y+2]=biases[1][y+2];
               data[y+3]=biases[1][y+3];
           }
-          data[y+0] += hidden_layers[x]*weights[1][x+size*(y+0)];
-          data[y+1] += hidden_layers[x]*weights[1][x+size*(y+1)];
-          data[y+2] += hidden_layers[x]*weights[1][x+size*(y+2)];
-          data[y+3] += hidden_layers[x]*weights[1][x+size*(y+3)];
+      }
+      for(y=0;y<size;y+=4){         //cache tilling
+          if(x%4 == 0) break;
+          data[y+0] += hidden_layers[x-4]*weights[1][x-4+size*(y+0)];
+          data[y+1] += hidden_layers[x-4]*weights[1][x-4+size*(y+1)];
+          data[y+2] += hidden_layers[x-4]*weights[1][x-4+size*(y+2)];
+          data[y+3] += hidden_layers[x-4]*weights[1][x-4+size*(y+3)];
+
+          data[y+0] += hidden_layers[x-3]*weights[1][x-3+size*(y+0)];
+          data[y+1] += hidden_layers[x-3]*weights[1][x-3+size*(y+1)];
+          data[y+2] += hidden_layers[x-3]*weights[1][x-3+size*(y+2)];
+          data[y+3] += hidden_layers[x-3]*weights[1][x-3+size*(y+3)];
+
+          data[y+0] += hidden_layers[x-2]*weights[1][x-2+size*(y+0)];
+          data[y+1] += hidden_layers[x-2]*weights[1][x-2+size*(y+1)];
+          data[y+2] += hidden_layers[x-2]*weights[1][x-2+size*(y+2)];
+          data[y+3] += hidden_layers[x-2]*weights[1][x-2+size*(y+3)];
+
+          data[y+0] += hidden_layers[x-1]*weights[1][x-1+size*(y+0)];
+          data[y+1] += hidden_layers[x-1]*weights[1][x-1+size*(y+1)];
+          data[y+2] += hidden_layers[x-1]*weights[1][x-1+size*(y+2)];
+          data[y+3] += hidden_layers[x-1]*weights[1][x-1+size*(y+3)];
       }
 
     }
