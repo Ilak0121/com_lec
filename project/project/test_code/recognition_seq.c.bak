@@ -55,8 +55,8 @@ void recognition(float * images, float * network, int depth, int size, int * lab
     input = images + IMG_SIZE * i;
 
     // From the input layer to the first hidden layer
-    clock_gettime(CLOCK_MONOTONIC,&forS);
-    #pragma omp parallel for private (y, IS_X, sum, Avec, Bvec, x)
+    //clock_gettime(CLOCK_MONOTONIC,&forS);
+
     for(x = 0; x < size; x++)
     {
 
@@ -80,50 +80,50 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       sum[0] += biases[0][x];
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
-      if(x==0){ 
-          for(y=0;y<size;y+=4){         //cache tilling
-              data[y+0]=biases[1][y+0];
-              data[y+1]=biases[1][y+1];
-              data[y+2]=biases[1][y+2];
-              data[y+3]=biases[1][y+3];
-          }
-      }
-      float h1,h2,h3,h0;
-
-      for(y=0;y<size;y+=4){         //cache tilling
-          if(x%4 !=3 ) break;
-          h3=hidden_layers[x-3];
-          h2=hidden_layers[x-2];
-          h1=hidden_layers[x-1];
-          h0=hidden_layers[x-0];
-
-          data[y+0] += h3*weights[1][x-3+size*(y+0)];
-          data[y+0] += h2*weights[1][x-2+size*(y+0)];
-          data[y+0] += h1*weights[1][x-1+size*(y+0)];
-          data[y+0] += h0*weights[1][x-0+size*(y+0)];
-
-          data[y+1] += h3*weights[1][x-3+size*(y+1)];
-          data[y+1] += h2*weights[1][x-2+size*(y+1)];
-          data[y+1] += h1*weights[1][x-1+size*(y+1)];
-          data[y+1] += h0*weights[1][x-0+size*(y+1)];
-
-          data[y+2] += h3*weights[1][x-3+size*(y+2)];
-          data[y+2] += h2*weights[1][x-2+size*(y+2)];
-          data[y+2] += h1*weights[1][x-1+size*(y+2)];
-          data[y+2] += h0*weights[1][x-0+size*(y+2)];
-
-          data[y+3] += h3*weights[1][x-3+size*(y+3)];
-          data[y+3] += h2*weights[1][x-2+size*(y+3)];
-          data[y+3] += h1*weights[1][x-1+size*(y+3)];
-          data[y+3] += h0*weights[1][x-0+size*(y+3)];
-
-
-          //data[y+1] += hidden_layers[x]*weights[1][x+size*(y+1)];
-          //data[y+2] += hidden_layers[x]*weights[1][x+size*(y+2)];
-          //data[y+3] += hidden_layers[x]*weights[1][x+size*(y+3)];
+      /*----------------------------------------------*/
+      if(x%4 == 0){ //x should do with period 4
+        if(x==0) continue;
+        for(y=0;y<size;y+=4){
+            sum = vdupq_n_f32(0); //we should reset sum here.
+            if(x==4) {
+                data[y]=biases[1][y];
+                data[y+1]=biases[1][y+1];
+                data[y+2]=biases[1][y+2];
+                data[y+3]=biases[1][y+3];}
+            //data[y] += hidden_layers[x]*weights[1][x+size*y];
+            Avec = vld1q_f32(&hidden_layers[x]);
+            int test =size*y+x-4;
+            Bvec = vld1q_lane_f32(&weights[1][test],Bvec,0);
+            Bvec = vld1q_lane_f32(&weights[1][test+size],Bvec,1);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size],Bvec,2);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size+size],Bvec,3);
+            sum = vmlaq_f32(sum,Avec,Bvec);
+            //vst1q_f32(&data[y],sum);
+            data[y] += vgetq_lane_f32(sum,0); 
+            data[y+1] += vgetq_lane_f32(sum,1); 
+            data[y+2] += vgetq_lane_f32(sum,2); 
+            data[y+3] += vgetq_lane_f32(sum,3); 
+        }
       }
 
     }
+        x=size;
+        for(y=0;y<size;y+=4){
+            sum = vdupq_n_f32(0); //we should reset sum here.
+            //data[y] += hidden_layers[x]*weights[1][x+size*y];
+            Avec = vld1q_f32(&hidden_layers[x]);
+            int test =size*y+x-4;
+            Bvec = vld1q_lane_f32(&weights[1][test],Bvec,0);
+            Bvec = vld1q_lane_f32(&weights[1][test+size],Bvec,1);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size],Bvec,2);
+            Bvec = vld1q_lane_f32(&weights[1][test+size+size+size],Bvec,3);
+            sum = vmlaq_f32(sum,Avec,Bvec);
+            //vst1q_f32(&data[y],sum);
+            data[y] += vgetq_lane_f32(sum,0); 
+            data[y+1] += vgetq_lane_f32(sum,1); 
+            data[y+2] += vgetq_lane_f32(sum,2); 
+            data[y+3] += vgetq_lane_f32(sum,3); 
+        }
     for(x=0;x<size;x++){
         hidden_layers[size  + x] = sigmoid(data[x]);
     }
