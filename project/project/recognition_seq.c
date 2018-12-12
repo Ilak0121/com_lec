@@ -81,42 +81,42 @@ void recognition(float * images, float * network, int depth, int size, int * lab
       hidden_layers[x] = sigmoid(sum[0]); //0~63 in hidden
 
       if(x==0){ 
-          for(y=0;y<size;y+=4){         //cache tilling
+          for(y=0;y<size;y+=4){         //For cache tiling. initialize with biases
               data[y+0]=biases[1][y+0];
               data[y+1]=biases[1][y+1];
               data[y+2]=biases[1][y+2];
               data[y+3]=biases[1][y+3];
           }
       }
-      float h1,h2,h3,h0;
-
-      for(y=0;y<size;y+=4){         //cache tilling
+      //float h1,h2,h3,h0; // [LIM] don't move this line. For OpenMP
+      float32x4_t H, res1, res2, res3, res4;
+      float32x4_t C1, C2, C3, C4;
+    
+      for(y=0;y<size;y+=4){         // cache tiling CODE
           if(x%4 !=3 ) break;
-          h3=hidden_layers[x-3];
-          h2=hidden_layers[x-2];
-          h1=hidden_layers[x-1];
-          h0=hidden_layers[x-0];
+       
+          res1 = vdupq_n_f32(0); //we should reset sum here.
+          res2 = vdupq_n_f32(0); //we should reset sum here.
+          res3 = vdupq_n_f32(0); //we should reset sum here.
+          res4 = vdupq_n_f32(0); //we should reset sum here.
+	  
+          
+          H = vld1q_f32(&hidden_layers[x-3]);
 
-          data[y+0] += h3*weights[1][x-3+size*(y+0)];
-          data[y+0] += h2*weights[1][x-2+size*(y+0)];
-          data[y+0] += h1*weights[1][x-1+size*(y+0)];
-          data[y+0] += h0*weights[1][x-0+size*(y+0)];
+          C1 = vld1q_f32(&weights[1][x-3+size*(y+0)]);
+          C2 = vld1q_f32(&weights[1][x-3+size*(y+1)]);
+          C3 = vld1q_f32(&weights[1][x-3+size*(y+2)]);
+          C4 = vld1q_f32(&weights[1][x-3+size*(y+3)]);
+          
+          res1 = vmlaq_f32(res1,H,C1);
+          res2 = vmlaq_f32(res2,H,C2);
+          res3 = vmlaq_f32(res3,H,C3);
+          res4 = vmlaq_f32(res4,H,C4);
 
-          data[y+1] += h3*weights[1][x-3+size*(y+1)];
-          data[y+1] += h2*weights[1][x-2+size*(y+1)];
-          data[y+1] += h1*weights[1][x-1+size*(y+1)];
-          data[y+1] += h0*weights[1][x-0+size*(y+1)];
-
-          data[y+2] += h3*weights[1][x-3+size*(y+2)];
-          data[y+2] += h2*weights[1][x-2+size*(y+2)];
-          data[y+2] += h1*weights[1][x-1+size*(y+2)];
-          data[y+2] += h0*weights[1][x-0+size*(y+2)];
-
-          data[y+3] += h3*weights[1][x-3+size*(y+3)];
-          data[y+3] += h2*weights[1][x-2+size*(y+3)];
-          data[y+3] += h1*weights[1][x-1+size*(y+3)];
-          data[y+3] += h0*weights[1][x-0+size*(y+3)];
-
+          data[y+0] += res1[0]+res1[1]+res1[2]+res1[3];
+          data[y+1] += res2[0]+res2[1]+res2[2]+res2[3];
+          data[y+2] += res3[0]+res3[1]+res3[2]+res3[3];
+          data[y+3] += res4[0]+res4[1]+res4[2]+res4[3];
 
           //data[y+1] += hidden_layers[x]*weights[1][x+size*(y+1)];
           //data[y+2] += hidden_layers[x]*weights[1][x+size*(y+2)];
