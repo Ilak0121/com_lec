@@ -1,4 +1,4 @@
-CC=~/arm/bin/clang
+CC=~/arm/bin/aarch64-linux-android-gcc
 CFLAGS=-Wall -g -mcpu=cortex-a53 
 
 LIBS = -lm 

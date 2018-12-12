@@ -56,7 +56,6 @@ void recognition(float * images, float * network, int depth, int size, int * lab
 
     // From the input layer to the first hidden layer
     clock_gettime(CLOCK_MONOTONIC,&forS);
-    #pragma omp parallel for private (y, IS_X, sum, Avec, Bvec, x)
     for(x = 0; x < size; x++)
     {
 
